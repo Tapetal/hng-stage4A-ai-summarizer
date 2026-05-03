@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Page Summarizer</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+
+<!-- ── Header ─────────────────────────────────────────────── -->
+<header class="header">
+  <div class="header-left">
+    <img src="../../icons/icon32.png" alt="AI Summarizer" class="logo" />
+    <span class="app-name">AI Summarizer</span>
+  </div>
+  <div class="header-right">
+    <button id="btn-settings" class="icon-btn" aria-label="Settings" title="Settings">
+      ⚙️
+    </button>
+    <button id="btn-theme" class="icon-btn" aria-label="Toggle theme" title="Toggle dark mode">
+      🌙
+    </button>
+  </div>
+</header>
+
+<!-- ── Settings panel ─────────────────────────────────────── -->
+<section id="settings-panel" class="settings-panel hidden" aria-label="API Settings">
+  <h2 class="settings-title">API Settings</h2>
+
+  <div class="form-group">
+    <label for="select-provider" class="form-label">AI Provider</label>
+    <select id="select-provider" class="form-select">
+      <option value="gemini">Google Gemini (Free tier)</option>
+      <option value="openai">OpenAI GPT-4o Mini</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="input-apikey" class="form-label">API Key</label>
+    <div class="key-input-wrap">
+      <input
+        type="password"
+        id="input-apikey"
+        class="form-input"
+        placeholder="Paste your API key here"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <button id="btn-toggle-key" class="icon-btn small" aria-label="Show/hide key">👁</button>
+    </div>
+    <p class="hint">Stored locally. Never sent anywhere except the AI provider.</p>
+  </div>
+
+  <div class="settings-actions">
+    <button id="btn-save-settings" class="btn btn-primary">Save</button>
+    <button id="btn-clear-cache" class="btn btn-ghost">Clear cache</button>
+  </div>
+
+  <div id="settings-msg" class="settings-msg hidden"></div>
+</section>
+
+<!-- ── Main content ────────────────────────────────────────── -->
+<main id="main-panel" class="main-panel">
+
+  <!-- API key missing notice -->
+  <div id="no-key-notice" class="notice notice-warn hidden">
+    <span>⚠️</span>
+    <span>Add your API key in <button class="link-btn" id="open-settings-link">Settings</button> to get started.</span>
+  </div>
+
+  <!-- Page info -->
+  <div class="page-info" id="page-info">
+    <div class="page-title-wrap">
+      <span class="page-icon">📄</span>
+      <span id="page-title" class="page-title">Loading page…</span>
+    </div>
+    <div class="page-meta" id="page-meta"></div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="mode-pills" role="group" aria-label="Summary mode">
+      <button class="pill active" data-mode="full" id="pill-full">Full summary</button>
+      <button class="pill" data-mode="brief" id="pill-brief">3 bullets</button>
+    </div>
+
+    <div class="action-row">
+      <button id="btn-summarize" class="btn btn-primary btn-summarize" aria-label="Summarize this page">
+        <span class="btn-icon">✨</span> Summarize
+      </button>
+      <button id="btn-highlight" class="btn btn-ghost btn-small hidden" aria-label="Highlight key phrases on page" title="Highlight key phrases">
+        🔦
+      </button>
+      <button id="btn-clear-highlights" class="btn btn-ghost btn-small hidden" aria-label="Clear highlights" title="Clear highlights">
+        ✕
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div id="loading" class="loading hidden" role="status" aria-live="polite">
+    <div class="spinner" aria-hidden="true"></div>
+    <span>Summarizing…</span>
+  </div>
+
+  <!-- Error state -->
+  <div id="error-box" class="error-box hidden" role="alert" aria-live="assertive">
+    <span class="error-icon">⚠️</span>
+    <span id="error-msg"></span>
+  </div>
+
+  <!-- Summary output -->
+  <section id="summary-section" class="summary-section hidden" aria-label="Summary">
+
+    <div class="summary-header">
+      <span class="summary-badge" id="cache-badge" aria-label="Cached result"></span>
+      <div class="summary-toolbar">
+        <button id="btn-copy" class="icon-btn" aria-label="Copy summary" title="Copy">📋</button>
+        <button id="btn-refresh" class="icon-btn" aria-label="Refresh summary" title="Refresh">🔄</button>
+        <button id="btn-reset" class="icon-btn" aria-label="Clear summary" title="Clear">✕</button>
+      </div>
+    </div>
+
+    <!-- Bullets -->
+    <div class="section-block">
+      <h3 class="section-heading">📋 Summary</h3>
+      <ul id="bullets-list" class="bullets-list"></ul>
+    </div>
+
+    <!-- Insights -->
+    <div id="insights-block" class="section-block hidden">
+      <h3 class="section-heading">💡 Key Insights</h3>
+      <ul id="insights-list" class="bullets-list insights"></ul>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row" id="stats-row">
+      <span id="stat-words" class="stat"></span>
+      <span id="stat-time" class="stat"></span>
+      <span id="stat-generated" class="stat"></span>
+    </div>
+
+  </section>
+
+</main>
+
+<script src="popup.js"></script>
+</body>
+</html>
