@@ -143,7 +143,7 @@ async function loadSettings() {
   } else {
     hide('no-key-notice');
     $('btn-summarize').disabled = false;
-    $('select-provider').value = res.provider || 'gemini';
+    $('select-provider').value = res.provider || 'backend';
   }
 }
 
@@ -371,6 +371,11 @@ function resetSummary() {
 async function saveSettings() {
   const key      = $('input-apikey').value.trim();
   const provider = $('select-provider').value;
+
+  if (provider === 'backend') {
+    showSettingsMsg('Backend proxy is configured. No API key needed.', 'success');
+    return;
+  }
 
   if (!key) {
     showSettingsMsg('API key is required.', 'error');

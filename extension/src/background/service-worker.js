@@ -8,6 +8,7 @@
 
 const GEMINI_MODEL = 'gemini-2.5-flash';
 const OPENAI_MODEL = 'gpt-5.4-mini';
+const BACKEND_SUMMARIZE_URL = 'https://hng-stage4a-ai-summarizer.onrender.com/summarize';
 const PROVIDER_COOLDOWN_KEY = 'providerCooldowns';
 const DEFAULT_COOLDOWN_SECONDS = {
   gemini: 90,
@@ -518,32 +519,38 @@ async function summarizePage(payload) {
   acquireAiRequestLock();
 
   try {
-    // Get API credentials
-    const { key, provider } = await getApiKey();
-
-    // Respect provider rate-limit cooldowns before making another network call.
-    await assertProviderCooldown(provider);
-
     // Rate limit
     rateLimiter.check();
 
     const prompt = buildPrompt(title, text, estimatedReadingTime);
-    let raw;
+    const response = await fetch(BACKEND_SUMMARIZE_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title,
+        content: text,
+        estimatedReadingTime,
+      }),
+    });
 
-    if (provider === 'openai') {
-      raw = await callOpenAI(key, prompt);
-    } else {
-      raw = await callGemini(key, prompt);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || 'Backend request failed');
     }
 
-  let parsed = normalizeParsedSummary(parseAIResponse(raw));
-  if (!hasSummaryContent(parsed)) {
-    parsed = createFallbackSummary(title, text, wordCount, estimatedReadingTime);
-  }
+    const data = await response.json();
+    const raw = data.text || '';
 
-  if (!hasSummaryContent(parsed)) {
-    throw new Error('The AI returned an empty summary. Please try again.');
-  }
+    let parsed = normalizeParsedSummary(parseAIResponse(raw));
+    if (!hasSummaryContent(parsed)) {
+      parsed = createFallbackSummary(title, text, wordCount, estimatedReadingTime);
+    }
+
+    if (!hasSummaryContent(parsed)) {
+      throw new Error('The AI returned an empty summary. Please try again.');
+    }
 
     const result = {
       ...parsed,
@@ -585,11 +592,9 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     }
 
     case 'GET_SETTINGS': {
-      chrome.storage.local.get(['apiKey', 'apiProvider'], result => {
-        sendResponse({
-          hasKey: !!result.apiKey,
-          provider: result.apiProvider || 'gemini',
-        });
+      sendResponse({
+        hasKey: true,
+        provider: 'backend',
       });
       return true;
     }

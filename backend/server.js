@@ -7,7 +7,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.post("https://hng-stage4a-ai-summarizer.onrender.com/summarize", async (req, res) => {
+app.post("/summarize", async (req, res) => {
   try {
     const { content, title } = req.body;
 

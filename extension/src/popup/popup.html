@@ -31,6 +31,7 @@
   <div class="form-group">
     <label for="select-provider" class="form-label">AI Provider</label>
     <select id="select-provider" class="form-select">
+      <option value="backend">Backend Proxy (Gemini 2.5 Flash)</option>
       <option value="gemini">Google Gemini (Free tier)</option>
       <option value="openai">OpenAI GPT-5.4 Mini</option>
     </select>
@@ -49,7 +50,7 @@
       />
       <button id="btn-toggle-key" class="icon-btn small" aria-label="Show/hide key">👁</button>
     </div>
-    <p class="hint">Stored locally. Never sent anywhere except the AI provider.</p>
+    <p class="hint">Backend proxy mode does not require a user API key.</p>
   </div>
 
   <div class="settings-actions">
