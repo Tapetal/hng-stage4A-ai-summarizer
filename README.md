@@ -17,14 +17,21 @@ A Manifest V3 Chrome Extension that extracts content from any webpage and summar
 2. Open Chrome and go to `chrome://extensions/`
 3. Enable **Developer mode** (toggle in top-right)
 4. Click **Load unpacked**
-5. Select the `ai-summarizer/` folder (the one containing `manifest.json`)
+5. Select the `extension/` folder, which contains `manifest.json`.
 6. The extension icon (✨) appears in your toolbar
 
 ---
 
-## Setup — API Key
+## Setup — No API Key Required
 
-The extension requires your own AI API key. Keys are stored locally in `chrome.storage.local` and **never** sent anywhere except the AI provider you choose.
+This extension uses a secure backend proxy hosted on Render.
+
+- Users do NOT need to provide any API key
+- All AI requests are handled securely by the backend
+- API keys are never exposed in the frontend
+
+Backend URL:
+https://hng-stage4a-ai-summarizer.onrender.com
 
 ### Option A — Google Gemini (recommended, has free tier)
 1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey)
@@ -64,25 +71,33 @@ For demos, use one or two reliable article pages and avoid repeatedly refreshing
 ## File Structure
 
 ```
-ai-summarizer/
-├── manifest.json                  # Manifest V3 config
-├── icons/
-│   ├── icon16.png
-│   ├── icon32.png
-│   ├── icon48.png
-│   └── icon128.png
-└── src/
-    ├── background/
-    │   └── service-worker.js      # AI API calls, caching, rate limiting
-    ├── content/
-    │   └── content-script.js      # Content extraction + highlighting
-    ├── popup/
-    │   ├── popup.html             # Extension popup UI
-    │   ├── popup.css              # Styles (dark/light mode)
-    │   └── popup.js               # Popup controller
-    └── utils/
-        ├── sanitize.js            # XSS prevention helpers
-        └── readability.js         # Heuristic content extractor
+hng-stage4A-ai-summarizer/
+├── backend/
+│   ├── server.js                  # Node/Express backend proxy for Gemini API
+│   ├── package.json               # Backend dependencies and scripts
+│   └── package-lock.json
+│
+├── extension/
+│   ├── manifest.json              # Manifest V3 config
+│   ├── icons/
+│   │   ├── icon16.png
+│   │   ├── icon32.png
+│   │   ├── icon48.png
+│   │   └── icon128.png
+│   └── src/
+│       ├── background/
+│       │   └── service-worker.js  # Messaging, caching, backend proxy calls
+│       ├── content/
+│       │   └── content-script.js  # Content extraction + highlighting
+│       ├── popup/
+│       │   ├── popup.html         # Extension popup UI
+│       │   ├── popup.css          # Styles and theme handling
+│       │   └── popup.js           # Popup controller
+│       └── utils/
+│           ├── sanitize.js        # XSS prevention helpers
+│           └── readability.js     # Heuristic content extractor
+│
+└── README.md
 ```
 
 ---
@@ -94,13 +109,18 @@ ai-summarizer/
 ```
 Popup UI
   │
-  ├─ sendMessage(EXTRACT_CONTENT)  ──▶  Content Script
-  │                                      └─ Returns { title, text, wordCount, … }
+  ├─ sendMessage(EXTRACT_CONTENT) ──▶ Content Script
+  │                                    └─ Returns { title, text, wordCount, estimatedReadingTime }
   │
-  └─ sendMessage(SUMMARIZE)        ──▶  Background Service Worker
-                                         ├─ Checks chrome.storage cache
-                                         ├─ Calls Gemini / OpenAI API
-                                         └─ Returns structured summary
+  └─ sendMessage(SUMMARIZE) ───────▶ Background Service Worker
+                                       ├─ Checks chrome.storage cache
+                                       ├─ Sends page content to backend proxy
+                                       └─ Returns normalized summary to popup
+
+Backend Proxy
+  │
+  └─ POST /summarize ──────────────▶ Gemini API
+                                      └─ Returns structured JSON summary
 ```
 
 ### Components
@@ -133,7 +153,16 @@ Popup UI
 
 ---
 
-## AI Integration
+## AI Integration & Security
+
+The extension uses a backend proxy to securely communicate with the Gemini API.
+
+Flow:
+Extension → Backend (Render) → Gemini API
+
+- API keys are stored only on the backend
+- No secrets are exposed in the extension
+- Backend handles prompt formatting and response parsing
 
 The AI prompt requests one structured JSON response:
 
@@ -166,7 +195,7 @@ Gemini uses the current stable Flash model, `gemini-2.5-flash`. Older `gemini-1.
 
 ## Trade-offs and Limitations
 
-- **No backend proxy** — the AI API call goes directly from the background service worker. This is acceptable for a personal extension but would need a proxy for a published product to fully hide the key from network inspection.
+- **Uses backend proxy** — AI requests are routed through a secure Node.js backend to prevent API key exposure.
 - **localStorage for theme** — popup `localStorage` is extension-scoped (safe), but separate from `chrome.storage`. Theme preference is popup-only.
 - **8,000 char truncation** — long pages are truncated. This covers most articles but may miss details on very long documents.
 - **Content script injection** — some browser-internal pages (`chrome://`, `chrome-extension://`) block content scripts. The popup handles this gracefully with an error message.

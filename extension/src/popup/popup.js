@@ -265,7 +265,7 @@ async function handleSummarize(forceRefresh = false) {
 function renderSummary(data) {
   // Cache badge
   $('cache-badge').textContent = data.fallback
-    ? 'Local fallback'
+    ? 'Page highlights'
     : data.fromCache
       ? 'Cached'
       : '';
