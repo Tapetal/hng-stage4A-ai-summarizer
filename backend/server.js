@@ -1,3 +1,4 @@
+console.log("ENV CHECK:", process.env.GEMINI_API_KEY ? "FOUND" : "MISSING");
 const express = require("express");
 const fetch = require("node-fetch");
 const cors = require("cors");
