@@ -36,6 +36,20 @@ ${content.slice(0, 6000)}
         },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.3,
+            maxOutputTokens: 1024,
+            responseMimeType: "application/json",
+            responseJsonSchema: {
+              type: "object",
+              properties: {
+                summary: { type: "array", items: { type: "string" } },
+                key_insights: { type: "array", items: { type: "string" } },
+                reading_time_minutes: { type: "number" },
+                keyPhrases: { type: "array", items: { type: "string" } }
+              }
+            }
+          }
         }),
       }
     );
