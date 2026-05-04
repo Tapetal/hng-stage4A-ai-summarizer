@@ -1,7 +1,7 @@
-import express from "express";
-import fetch from "node-fetch";
-import cors from "cors";
-import dotenv from "dotenv";
+const express = require("express");
+const fetch = require("node-fetch");
+const cors = require("cors");
+require("dotenv").config();
 
 dotenv.config();
 
@@ -9,7 +9,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.post("/summarize", async (req, res) => {
+app.post("https://hng-stage4a-ai-summarizer.onrender.com/summarize", async (req, res) => {
   try {
     const { content, title } = req.body;
 
