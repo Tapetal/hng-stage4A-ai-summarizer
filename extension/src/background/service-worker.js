@@ -5,7 +5,7 @@
  */
 
 'use strict';
-
+console.log("ENV CHECK:", process.env.GEMINI_API_KEY ? "FOUND" : "MISSING");
 const GEMINI_MODEL = 'gemini-2.5-flash';
 const OPENAI_MODEL = 'gpt-5.4-mini';
 const BACKEND_SUMMARIZE_URL = 'https://hng-stage4a-ai-summarizer.onrender.com/summarize';
