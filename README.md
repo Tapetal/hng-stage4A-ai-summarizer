@@ -5,7 +5,7 @@ A Manifest V3 Chrome Extension that extracts content from any webpage and summar
 ---
 
 ## Demo Video
-[Add your 2–5 minute demo video link here]
+https://drive.google.com/file/d/1gphrdSjqUkQ2VGT_G4CYtrnrElsatxtj/view?usp=drive_link
 
 ---
 
